@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:spring="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:cxf="http://www.mulesoft.org/schema/mule/cxf"
+	xmlns:tcp="http://www.mulesoft.org/schema/mule/tcp" xmlns:stdio="http://www.mulesoft.org/schema/mule/stdio"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:jee="http://www.springframework.org/schema/jee" xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:quartz="http://www.mulesoft.org/schema/mule/quartz" xmlns:jdbc="http://www.mulesoft.org/schema/mule/jdbc"
+	xmlns:pattern="http://www.mulesoft.org/schema/mule/pattern"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/3.2/mule.xsd
+        http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/3.2/mule-http.xsd
+        http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/3.2/mule-vm.xsd
+        http://www.mulesoft.org/schema/mule/pattern http://www.mulesoft.org/schema/mule/pattern/3.2/mule-pattern.xsd
+        http://www.mulesoft.org/schema/mule/quartz http://www.mulesoft.org/schema/mule/quartz/3.2/mule-quartz.xsd
+        http://www.mulesoft.org/schema/mule/cxf http://www.mulesoft.org/schema/mule/cxf/3.2/mule-cxf.xsd">
+	<!--
+		<custom-transformer name="muleservice"
+		class="com.test.cxf.transferCxf" /> <custom-transformer
+		name="stringToInteger" class="com.test.cxf.StringToInteger" />
+		<custom-transformer name="HttpRequestToNameString"
+		class="org.mule.example.hello.HttpRequestToNameString" />
+		<custom-transformer name="HttpRequestToParameter"
+		class="org.mule.transport.servlet.transformers.HttpRequestToParameter"/>
+		<custom-transformer name="AToB"
+		class="com.test.cxf.transformer.AToBTransformer"/> <custom-transformer
+		name="BToA" class="com.test.cxf.transformer.BToATransformer" />
+
+		<spring:bean id="dataSource"
+		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<spring:property name="driverClassName"
+		value="com.mysql.jdbc.Driver"/> <spring:property name="url"
+		value="jdbc:mysql://localhost:3306/"/> <spring:property
+		name="username" value="root"/> <spring:property name="password"
+		value="123"/> </spring:bean> <expression-transformer
+		name="ExtractSymbol"> <return-argument evaluator="map-payload"
+		expression="symbol" /> </expression-transformer> <jdbc:connector
+		name="jdbcConnector" dataSource-ref="dataSource"
+		pollingFrequency="1000" queryTimeout="-1"> <jdbc:query key="saveUser"
+		value="insert into user_base (username,password,email) values
+		(#[map-payload:username],#[map-payload:password],#[map-payload:email])"/>
+		<jdbc:query key="getAllUser" value="select * from user_base u"/>
+		</jdbc:connector> <flow name="in"> <inbound-endpoint
+		address="http://localhost:8889/service/AToB"
+		exchange-pattern="request-response"> <cxf:jaxws-service
+		serviceClass="com.test.cxf.newCxf.INewCxf" /> </inbound-endpoint>
+		<component> <singleton-object
+		class="com.test.cxf.newCxf.NewCxfImp"></singleton-object> </component>
+		<custom-transformer
+		class="com.test.cxf.transformer.AToBTransformer"></custom-transformer>
+		<flow-ref name="out"/> </flow> <flow name="out"> <outbound-endpoint
+		address="http://xop.xiu.com:8080/Demo/cxf/cxftest"
+		responseTransformer-refs="BToA" exchange-pattern="request-response">
+		<cxf:jaxws-client serviceClass="com.test.cxf.ICxf" operation="getB" />
+		</outbound-endpoint> </flow> <flow name="jdbc_store">
+		<jdbc:outbound-endpoint queryKey="getAllUser"
+		connector-ref="jdbcConnector" queryTimeout="100"
+		exchange-pattern="request-response"> <jdbc:transaction
+		action="ALWAYS_BEGIN"/> </jdbc:outbound-endpoint> </flow> <flow
+		name="EchoStdio"> <stdio:inbound-endpoint system="IN"
+		exchange-pattern="one-way"/> <flow-ref name="EchoComponent"/>
+
+		<stdio:outbound-endpoint system="OUT" exchange-pattern="one-way"/>
+
+		</flow> <flow name="WebService"> <inbound-endpoint
+		address="http://localhost:65082/services/EchoUMO"
+		exchange-pattern="request-response" /> <cxf:jaxws-service
+		serviceClass="org.asb.mule.probe.ptn.u2000V16.service.U2000Service" />
+
+		</flow>
+	-->
+	<!--1.南向  -->
+	<!--1.1南向：厂商网管核心的实现服务  -->
+	<spring:bean id="U2000Bean"
+		class="org.asb.mule.probe.ptn.u2000V16.sbi.service.CorbaService"
+		init-method="init">
+		<spring:property name="emsName" value="U2000" />
+		<!--
+			确定本地ORB是以ip还是主机名发布(jacorb.dns.enable,jacorb.ior_proxy_host,jacorb.ior_proxy_port)
+			on-主机名，off-ip
+		-->
+
+		<spring:property name="namingServiceDns" value="on" />
+		<spring:property name="namingServiceIp" value="INMSC1" />
+		<spring:property name="corbaUrl"
+			value="corbaloc:iiop:136.224.243.92:12001/NameService" />
+		<spring:property name="corbaTree"
+			value="TMF_MTNM.Class/HUAWEI.Vendor/Huawei\/U2000.EmsInstance/2\.0.Version/Huawei\/U2000.EmsSessionFactory_I" />
+		<spring:property name="corbaUserName" value="corba123" />
+		<spring:property name="corbaPassword" value="corba123" />
+
+	</spring:bean>
+	
+	<spring:bean id="nbiService"
+		class="org.asb.mule.probe.ptn.u2000V16.service.U2000Service">
+		<spring:property name="corbaService" ref="U2000Bean" />
+		<spring:property name="key" value="2000" />
+	</spring:bean>
+	<!--1.2将南向corba service用webservice包装，暴露内部服务  -->
+	<flow name="nbi">
+		<inbound-endpoint address="http://localhost:65082/services/nbi"
+			exchange-pattern="request-response" />
+		<cxf:jaxws-service serviceClass="org.asb.mule.probe.framework.service.NbiService" />
+		<component>
+			<!-- service name="nbiService">
+				<singleton-object
+					class="org.asb.mule.probe.ptn.u2000V16.service.U2000Service">
+
+					<property key="corbaService" value-ref="U2000Bean" />
+					<property key="key" value="2000" />
+				</singleton-object>
+			</service-->
+			<spring-object bean="nbiService"/>
+		</component>
+	</flow>
+	
+	<!--1.3.南向  :自动重连厂商网管job-->
+	<spring:bean id="AutoConnectJob"
+		class="org.asb.mule.probe.ptn.u2000V16.sbi.job.AutoConnectJob">
+		<spring:property name="service" ref="nbiService" />
+	</spring:bean>
+
+	<quartz:endpoint name="AutoConnect" jobName="AutoConnectJob"
+		cronExpression="0 0/5 * * * ?">
+		<quartz:custom-job job-ref="AutoConnectJob" />
+	</quartz:endpoint>
+
+
+
+	<!--2.北向  :调用南向服务，通过quarts实现存量数据周期性入库-->
+	<spring:bean id="job"
+		class="org.asb.mule.probe.ptn.u2000V16.nbi.job.DayMigrationJob">
+		<spring:property name="service" ref="nbiService" />
+	</spring:bean>
+
+	<quartz:endpoint name="migrateToDb" jobName="DayMigation"
+		cronExpression="0 0/5 * * * ?">
+		<quartz:custom-job job-ref="job" />
+	</quartz:endpoint>
+
+	<model>
+		<service name="quartzService">
+			<inbound>
+				<inbound-endpoint ref="migrateToDb" />
+				<inbound-endpoint ref="AutoConnect" />
+			</inbound>
+
+		</service>
+	</model>
+</mule>
+
