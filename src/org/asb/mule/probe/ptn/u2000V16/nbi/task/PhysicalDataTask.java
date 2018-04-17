@@ -19,6 +19,7 @@ public class PhysicalDataTask extends CommonDataTask {
 	public boolean includeCC = false;
 	public Vector<BObject> excute() {
 		List<CrossConnect> crossConnects = new ArrayList<CrossConnect>();
+		List<SubnetworkConnection> sncs = new ArrayList<SubnetworkConnection>();
 		if (includeCC) {
 			try {
 				List<CrossConnect> ipccList = service.retrieveAllCrossConnects(this.getTask().getObjectName());
@@ -26,6 +27,12 @@ public class PhysicalDataTask extends CommonDataTask {
 					insertToSqliteDB(ipcc);
 					crossConnects.add(ipcc);
 				}
+				
+				List<SubnetworkConnection> sncList = service.retrieveAllSNCs();
+				for (SubnetworkConnection snc : sncList) {
+					sncs.add(snc);
+				}
+				
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -106,7 +113,7 @@ public class PhysicalDataTask extends CommonDataTask {
 					}
 
 					if (sdh)
-						processCTP(neCtps, crossConnects);
+						processCTP(neCtps, crossConnects, sncs);
 					for (CTP ctp : neCtps) {
 						insertToSqliteDB(ctp);
 					}
@@ -121,7 +128,7 @@ public class PhysicalDataTask extends CommonDataTask {
 
 	}
 
-	public static void processCTP(List<CTP> ctps,List<CrossConnect> ccs ) {
+	public static void processCTP(List<CTP> ctps,List<CrossConnect> ccs,List<SubnetworkConnection> sncs ) {
 		HashMap<String,CTP> ctpMap = new HashMap<String, CTP>();
 		List<String> ccEnds = new ArrayList<>();
 		
@@ -157,7 +164,37 @@ public class PhysicalDataTask extends CommonDataTask {
 						}
 					}
 				}
+			}
+		}
+		if (!sncs.isEmpty()) {
+			for (SubnetworkConnection snc : sncs) {
+				String aends = snc.getaEnd();
+				if (aends != null) {
+					String[] dns = aends.split(Constant.listSplitReg);
+					for (String dn : dns) {
+						ccEnds.add(dn);
+						if (!ctpMap.containsKey(dn)) {
+							CTP newCTP = newCTP(dn);
+
+							ctps.add(newCTP);
+							ctpMap.put(dn,newCTP);
+						}
+					}
+				}
 				
+				String zends = snc.getzEnd();
+				if (zends != null) {
+					String[] dns = zends.split(Constant.listSplitReg);
+					for (String dn : dns) {
+						ccEnds.add(dn);
+						if (!ctpMap.containsKey(dn)) {
+							CTP newCTP = newCTP(dn);
+
+							ctps.add(newCTP);
+							ctpMap.put(dn,newCTP);
+						}
+					}
+				}
 			}
 		}
 
@@ -240,9 +277,10 @@ public class PhysicalDataTask extends CommonDataTask {
 	public static void main(String[] args) {
 		PhysicalDataTask task1 = new PhysicalDataTask();
 		List<CrossConnect> ccs = (List<CrossConnect>) ObjectUtil.readObjectByPath("d:\\cache\\result_1431952368947");
+		List<SubnetworkConnection> sncs = new ArrayList<SubnetworkConnection>();
 		List<CTP> ctps = (List<CTP>)ObjectUtil.readObjectByPath("d:\\cache\\result_1431952312635");
 
-		task1.processCTP(ctps, ccs);
+		task1.processCTP(ctps, ccs, sncs);
 
 		System.out.println("ctps = " + ctps.size());
 		for (CTP ctp : ctps) {

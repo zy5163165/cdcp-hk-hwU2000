@@ -127,7 +127,7 @@ public class DeviceJob extends MigrateCommonJob implements CommandBean {
 			executor.waitingForAllFinish();
 			ArrayList<CTP> ctpList = new ArrayList<CTP>(ctps);
 			if (sdh)
-				PhysicalDataTask.processCTP(ctps,ccs);
+				PhysicalDataTask.processCTP(ctps,ccs,new ArrayList<SubnetworkConnection>());
 
 			nbilog.info("ctp size = "+ctpList.size());
 
