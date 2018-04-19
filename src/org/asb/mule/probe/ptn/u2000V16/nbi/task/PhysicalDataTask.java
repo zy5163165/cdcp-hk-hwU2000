@@ -29,9 +29,11 @@ public class PhysicalDataTask extends CommonDataTask {
 				}
 				
 				List<SubnetworkConnection> sncList = service.retrieveAllSNCs();
+				nbilog.info("first get sncList.size=" + sncList.size());
 				for (SubnetworkConnection snc : sncList) {
 					sncs.add(snc);
 				}
+				nbilog.info("first get sncs.size=" + sncs.size());
 				
 			} catch (Exception e) {
 				e.printStackTrace();
