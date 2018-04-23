@@ -332,63 +332,63 @@ public class PhysicalDataTask extends CommonDataTask {
 		// 单独补充snc缺失的ctp，不走交叉的补充逻辑：暂定是用下面的循环来，判断vc3和vc12，然后vc12走l和m的循环，补充两端ctp，建立新交叉。
 		if (Detect.notEmpty(vc4DnMap)) {
 			Set<String> vc4dns = vc4DnMap.keySet();
-			for (String vc4dn : vc4dns) {
-				// 判断vc4下面的是vc3还是vc12
-				List<String> vc12dns = vc4DnMap.get(vc4dn);
-				int[] vc3k = new int[]{};
-				int i = 0;
-				for (String vc12dn : vc12dns) {
-					if (CTPUtil.isVC3(vc12dn)) {
-						vc3k[i] = CTPUtil.getK(vc12dn);
-						i++;
-					}
-				}
-
-				// 获取对端的vc4，用于拼装对端的vc3/vc12
-				List<CrossConnect> vc4ccs = vc4ccMap.get(vc4dn);
-				String otherEnd = "";
-				if (Detect.notEmpty(vc4ccs)) {
-					for(CrossConnect vc4cc : vc4ccs) {
-						if (vc4cc.getaEndNameList().contains(vc4dn)) {
-							otherEnd = vc4cc.getzEndNameList();
-						} else if (vc4cc.getzEndNameList().contains(vc4dn)) {
-							otherEnd = vc4cc.getaEndNameList();
+			if (Detect.isPositive(vc4dns.size())) {
+				for (String vc4dn : vc4dns) {
+					// 判断vc4下面的是vc3还是vc12
+					List<String> vc12dns = vc4DnMap.get(vc4dn);
+					int[] vc3k = new int[]{};
+					for (String vc12dn : vc12dns) {
+						if (CTPUtil.isVC3(vc12dn)) {
+							vc3k = ArrayUtils.add(vc3k, CTPUtil.getK(vc12dn));
 						}
-						otherEnd = StringUtils.substringBefore(otherEnd, "||");
 					}
-				}
-				
-				for (int k=1;k<4;k++) {
-					// vc3的补充逻辑：补充两端vc3，再补一个交叉
-					if (ArrayUtils.contains(vc3k, k)) {
-						String onedn = vc4dn + "/tu3_vc3-k=" + k;
-						CTP oneCTP = newCTP(onedn);
-						ctps.add(oneCTP);
-						
-						if (Detect.notEmpty(otherEnd)) { // vc层存在交叉才有补充对端ctp和交叉的意义
-							String otherdn = otherEnd + "/tu3_vc3-k=" + k;
-							CTP otherCTP = newCTP(otherdn);
-							ctps.add(otherCTP);
-							
-							CrossConnect newCC = newCC(onedn, otherdn);
-							ccs.add(newCC);
+
+					// 获取对端的vc4，用于拼装对端的vc3/vc12
+					List<CrossConnect> vc4ccs = vc4ccMap.get(vc4dn);
+					String otherEnd = "";
+					if (Detect.notEmpty(vc4ccs)) {
+						for(CrossConnect vc4cc : vc4ccs) {
+							if (vc4cc.getaEndNameList().contains(vc4dn)) {
+								otherEnd = vc4cc.getzEndNameList();
+							} else if (vc4cc.getzEndNameList().contains(vc4dn)) {
+								otherEnd = vc4cc.getaEndNameList();
+							}
+							otherEnd = StringUtils.substringBefore(otherEnd, "||");
 						}
 					}
 					
-					// vc12的补充逻辑：补充两端vc12，再补3*7个交叉
-					for (int l=1;l<8;l++) {
-						for (int m=1;m<4;m++) {
-							String onedn = vc4dn + "/vt2_tu12="+k+"-l="+l+"-m="+m;
+					for (int k=1;k<4;k++) {
+						// vc3的补充逻辑：补充两端vc3，再补一个交叉
+						if (ArrayUtils.contains(vc3k, k)) {
+							String onedn = vc4dn + "/tu3_vc3-k=" + k;
 							CTP oneCTP = newCTP(onedn);
 							ctps.add(oneCTP);
 							
 							if (Detect.notEmpty(otherEnd)) { // vc层存在交叉才有补充对端ctp和交叉的意义
-								String otherdn = otherEnd + "/vt2_tu12="+k+"-l="+l+"-m="+m;
+								String otherdn = otherEnd + "/tu3_vc3-k=" + k;
 								CTP otherCTP = newCTP(otherdn);
 								ctps.add(otherCTP);
 								
 								CrossConnect newCC = newCC(onedn, otherdn);
 								ccs.add(newCC);
+							}
+						}
+						
+						// vc12的补充逻辑：补充两端vc12，再补3*7个交叉
+						for (int l=1;l<8;l++) {
+							for (int m=1;m<4;m++) {
+								String onedn = vc4dn + "/vt2_tu12="+k+"-l="+l+"-m="+m;
+								CTP oneCTP = newCTP(onedn);
+								ctps.add(oneCTP);
+								
+								if (Detect.notEmpty(otherEnd)) { // vc层存在交叉才有补充对端ctp和交叉的意义
+									String otherdn = otherEnd + "/vt2_tu12="+k+"-l="+l+"-m="+m;
+									CTP otherCTP = newCTP(otherdn);
+									ctps.add(otherCTP);
+									
+									CrossConnect newCC = newCC(onedn, otherdn);
+									ccs.add(newCC);
+								}
 							}
 						}
 					}
@@ -484,13 +484,11 @@ public class PhysicalDataTask extends CommonDataTask {
 		dn = StringUtils.replace(dn, "PTP", "CrossConnect");
 		
 		List<String> vc12dns = new ArrayList<>();
-		vc12dns.add("EMS:Huawei/U2000@ManagedElement:3145776@PTP:/rack=1/shelf=1/slot=27/domain=sdh/port=1@CTP:/sts3c_au4-j=5/vt2_tu12-k=1-l=7-m=1");
+		vc12dns.add("EMS:Huawei/U2000@ManagedElement:3145731@PTP:/rack=1/shelf=1/slot=29/domain=sdh/port=1@CTP:/sts3c_au4-j=34/tu3_vc3-k=1");
 		int[] vc3k = new int[]{};
-		int i = 0;
 		for (String vc12dn : vc12dns) {
 			if (CTPUtil.isVC3(vc12dn)) {
-				vc3k[i] = CTPUtil.getK(vc12dn);
-				i++;
+				vc3k = ArrayUtils.add(vc3k, CTPUtil.getK(vc12dn));
 			}
 		}
 		
