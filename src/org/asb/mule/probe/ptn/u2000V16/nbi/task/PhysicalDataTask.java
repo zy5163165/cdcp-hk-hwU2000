@@ -377,12 +377,12 @@ public class PhysicalDataTask extends CommonDataTask {
 						// vc12的补充逻辑：补充两端vc12，再补3*7个交叉
 						for (int l=1;l<8;l++) {
 							for (int m=1;m<4;m++) {
-								String onedn = vc4dn + "/vt2_tu12="+k+"-l="+l+"-m="+m;
+								String onedn = vc4dn + "/vt2_tu12-k="+k+"-l="+l+"-m="+m;
 								CTP oneCTP = newCTP(onedn);
 								ctps.add(oneCTP);
 								
 								if (Detect.notEmpty(otherEnd)) { // vc层存在交叉才有补充对端ctp和交叉的意义
-									String otherdn = otherEnd + "/vt2_tu12="+k+"-l="+l+"-m="+m;
+									String otherdn = otherEnd + "/vt2_tu12-k="+k+"-l="+l+"-m="+m;
 									CTP otherCTP = newCTP(otherdn);
 									ctps.add(otherCTP);
 									
