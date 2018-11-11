@@ -1,0 +1,47 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-2.5.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+
+
+    <bean id="U2000Bean"
+                 class="org.asb.mule.probe.ptn.u2000V16.sbi.service.CorbaService"
+                 init-method="init">
+        <property name="emsName" value="HZ-U2000-2-P" />
+        <!--
+            确定本地ORB是以ip还是主机名发布(jacorb.dns.enable,jacorb.ior_proxy_host,jacorb.ior_proxy_port)
+            on-主机名，off-ip
+        -->
+
+        <property name="namingServiceDns" value="off" />
+        <property name="namingServiceIp" value="10.212.51.80" />
+        <property name="corbaUrl"
+                         value="corbaloc:iiop:HZ-U2000-2-P:12001/NameService" />
+        <property name="corbaTree"
+                         value="TMF_MTNM.Class/HUAWEI.Vendor/HZ-U2000-2-P.EmsInstance/2\.0.Version/HZ-U2000-2-P.EmsSessionFactory_I" />
+        <property name="corbaUserName" value="corba3" />
+        <property name="corbaPassword" value="Corba3$zj123" />
+
+    </bean>
+
+    <bean id="nbiService"
+                 class="org.asb.mule.probe.ptn.u2000V16.service.U2000Service">
+        <property name="corbaService" ref="U2000Bean" />
+        <property name="key" value="2000" />
+    </bean>
+
+    <bean id="stat" class="org.asb.mule.probe.ptn.u2000V16.HuaweiStat" >
+        <property name="u2000Service" ref="nbiService"/>
+    </bean>
+
+    <bean id="job" class="org.asb.mule.probe.ptn.u2000V16.nbi.job.DayMigrationJob" >
+        <property name="service" ref="nbiService" />
+    </bean>
+
+</beans>
