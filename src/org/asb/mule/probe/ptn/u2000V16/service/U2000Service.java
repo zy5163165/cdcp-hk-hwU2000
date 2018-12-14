@@ -16,6 +16,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 import managedElement.ManagedElement_T;
+import multiLayerSubnetwork.MultiLayerSubnetwork_T;
 
 import org.asb.mule.probe.framework.entity.CTP;
 import org.asb.mule.probe.framework.entity.CrossConnect;
@@ -696,15 +697,7 @@ public class U2000Service implements NbiService {
 			errorlog.error("retrieveAllTopLevelTopologicalLinks CORBA.SystemException: " + e.getMessage(), e);
 		}
 		sbilog.info("topSectionList : " + (topSectionList == null ? null:topSectionList.length));
-		try {
-			vendorSectionList = SubnetworkMgrHandler.instance()
-					.retrieveAllTopologicalLinks(corbaService.getNmsSession().getMultiLayerSubnetworkMgr(), subnetDn);
-		} catch (ProcessingFailureException e) {
-			errorlog.error("retrieveAllSections ProcessingFailureException: " + CodeTool.isoToGbk(e.errorReason), e);
-		} catch (org.omg.CORBA.SystemException e) {
-			errorlog.error("retrieveAllSections CORBA.SystemException: " + e.getMessage(), e);
-		}
-		sbilog.info("vendorSectionList : " +(vendorSectionList == null ? null: vendorSectionList.length));
+
 		List<String> vneID = new ArrayList<String>();
 		ManagedElement_T[] vendorNeList = null;
 		try {
@@ -755,20 +748,51 @@ public class U2000Service implements NbiService {
 				}
 			}
 		}
-		if (vendorSectionList != null) {
-			for (TopologicalLink_T vendorSection : vendorSectionList) {
-				try {
-					if (vneID.contains(vendorSection.aEndTP[1].value) || vneID.contains(vendorSection.zEndTP[1].value)) {
-						sbilog.info("VirtualSection : " + vendorSection);
-						continue;
+		
+		try {
+			MultiLayerSubnetwork_T[] subnets = EMSMgrHandler.instance().retrieveAllTopLevelSubnetworks(corbaService.getNmsSession().getEmsMgr());
+			for (MultiLayerSubnetwork_T subnet : subnets) {
+				sbilog.info("retrieveAllTopologicalLinks : subnet=" + subnet.name);
+				vendorSectionList = SubnetworkMgrHandler.instance().retrieveAllTopologicalLinks(corbaService.getNmsSession().getMultiLayerSubnetworkMgr(), subnet.name);
+				if (vendorSectionList != null) {
+					sbilog.info("retrieveAllTopologicalLinks : subnet=" + subnet.name + "--" + vendorSectionList.length);
+					for (TopologicalLink_T vendorSection : vendorSectionList) {
+						try {
+							if (vneID.contains(vendorSection.aEndTP[1].value) || vneID.contains(vendorSection.zEndTP[1].value)) {
+								sbilog.info("VirtualSection : " + vendorSection);
+								continue;
+							}
+							Section section = SectionMapper.instance().convertSection(vendorSection, subnetDn);
+							sectionList.add(section);
+						} catch (Exception e) {
+							errorlog.error("retrieveAllSections convertException: ", e);
+						}
 					}
-					Section section = SectionMapper.instance().convertSection(vendorSection, subnetDn);
-					sectionList.add(section);
-				} catch (Exception e) {
-					errorlog.error("retrieveAllSections convertException: ", e);
 				}
 			}
+			
+//			vendorSectionList = SubnetworkMgrHandler.instance().retrieveAllTopologicalLinks(corbaService.getNmsSession().getMultiLayerSubnetworkMgr(), subnetDn);
+		} catch (ProcessingFailureException e) {
+			errorlog.error("retrieveAllSections ProcessingFailureException: " + CodeTool.isoToGbk(e.errorReason), e);
+		} catch (org.omg.CORBA.SystemException e) {
+			errorlog.error("retrieveAllSections CORBA.SystemException: " + e.getMessage(), e);
 		}
+//		sbilog.info("vendorSectionList : " +(vendorSectionList == null ? null: vendorSectionList.length));
+		
+//		if (vendorSectionList != null) {
+//			for (TopologicalLink_T vendorSection : vendorSectionList) {
+//				try {
+//					if (vneID.contains(vendorSection.aEndTP[1].value) || vneID.contains(vendorSection.zEndTP[1].value)) {
+//						sbilog.info("VirtualSection : " + vendorSection);
+//						continue;
+//					}
+//					Section section = SectionMapper.instance().convertSection(vendorSection, subnetDn);
+//					sectionList.add(section);
+//				} catch (Exception e) {
+//					errorlog.error("retrieveAllSections convertException: ", e);
+//				}
+//			}
+//		}
 		sbilog.info("retrieveAllSections : " + sectionList.size());
 		return sectionList;
 	}
@@ -1169,24 +1193,41 @@ public class U2000Service implements NbiService {
 
 	public List<SubnetworkConnection> retrieveAllSNCs() {
 		List<SubnetworkConnection> sncList = new ArrayList<SubnetworkConnection>();
-		SubnetworkConnection_T[] sncs = null;
+//		SubnetworkConnection_T[] sncs = null;
 		NameAndStringValue_T[] subnetworkName = VendorDNFactory.createSubnetworkDN(corbaService.getEmsDn(), "1");
 		try {
-			sncs = SubnetworkMgrHandler.instance().retrieveAllSNCs(corbaService.getNmsSession().getMultiLayerSubnetworkMgr(), subnetworkName, new short[0]);
+			
+			MultiLayerSubnetwork_T[] subnets = EMSMgrHandler.instance().retrieveAllTopLevelSubnetworks(corbaService.getNmsSession().getEmsMgr());
+			for (MultiLayerSubnetwork_T subnet : subnets) {
+				sbilog.info("retrieveAllSNCs : subnet=" + subnet.name);
+				SubnetworkConnection_T[] sncs = SubnetworkMgrHandler.instance().retrieveAllSNCs(corbaService.getNmsSession().getMultiLayerSubnetworkMgr(), subnet.name, new short[0]);
+				if (sncs != null) {
+					sbilog.info("retrieveAllSNCs : subnet=" + subnet.name + "--" + sncs.length);
+					for (SubnetworkConnection_T snc : sncs) {
+						try {
+							sncList.add(SubnetworkConnectionMapper.instance().convertSNC(snc));
+						} catch (Exception e) {
+							errorlog.error("retrieveAllSNCs convertException: ", e);
+						}
+					}
+				}
+			}
+			
+//			sncs = SubnetworkMgrHandler.instance().retrieveAllSNCs(corbaService.getNmsSession().getMultiLayerSubnetworkMgr(), subnetworkName, new short[0]);
 		} catch (ProcessingFailureException e) {
 			errorlog.error("retrieveAllSNCs ProcessingFailureException: " + CodeTool.isoToGbk(e.errorReason), e);
 		} catch (org.omg.CORBA.SystemException e) {
 			errorlog.error("retrieveAllSNCs CORBA.SystemException: " + e.getMessage(), e);
 		}
-		if (sncs != null) {
-			for (SubnetworkConnection_T snc : sncs) {
-				try {
-					sncList.add(SubnetworkConnectionMapper.instance().convertSNC(snc));
-				} catch (Exception e) {
-					errorlog.error("retrieveAllSNCs convertException: ", e);
-				}
-			}
-		}
+//		if (sncs != null) {
+//			for (SubnetworkConnection_T snc : sncs) {
+//				try {
+//					sncList.add(SubnetworkConnectionMapper.instance().convertSNC(snc));
+//				} catch (Exception e) {
+//					errorlog.error("retrieveAllSNCs convertException: ", e);
+//				}
+//			}
+//		}
 		sbilog.info("retrieveAllSNCs : " + sncList.size());
 		return sncList;
 	}
