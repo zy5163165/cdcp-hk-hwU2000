@@ -1193,41 +1193,55 @@ public class U2000Service implements NbiService {
 
 	public List<SubnetworkConnection> retrieveAllSNCs() {
 		List<SubnetworkConnection> sncList = new ArrayList<SubnetworkConnection>();
-//		SubnetworkConnection_T[] sncs = null;
+		SubnetworkConnection_T[] sncs = null;
+		SubnetworkConnection_T[] omsSncs = null;
 		NameAndStringValue_T[] subnetworkName = VendorDNFactory.createSubnetworkDN(corbaService.getEmsDn(), "1");
 		try {
 			
-			MultiLayerSubnetwork_T[] subnets = EMSMgrHandler.instance().retrieveAllTopLevelSubnetworks(corbaService.getNmsSession().getEmsMgr());
-			for (MultiLayerSubnetwork_T subnet : subnets) {
-				sbilog.info("retrieveAllSNCs : subnet=" + subnet.name);
-				SubnetworkConnection_T[] sncs = SubnetworkMgrHandler.instance().retrieveAllSNCs(corbaService.getNmsSession().getMultiLayerSubnetworkMgr(), subnet.name, new short[0]);
-				if (sncs != null) {
-					sbilog.info("retrieveAllSNCs : subnet=" + subnet.name + "--" + sncs.length);
-					for (SubnetworkConnection_T snc : sncs) {
-						try {
-							sncList.add(SubnetworkConnectionMapper.instance().convertSNC(snc));
-						} catch (Exception e) {
-							errorlog.error("retrieveAllSNCs convertException: ", e);
-						}
-					}
-				}
-			}
+//			MultiLayerSubnetwork_T[] subnets = EMSMgrHandler.instance().retrieveAllTopLevelSubnetworks(corbaService.getNmsSession().getEmsMgr());
+//			for (MultiLayerSubnetwork_T subnet : subnets) {
+//				sbilog.info("retrieveAllSNCs : subnet=" + subnet.name);
+//				SubnetworkConnection_T[] sncs = SubnetworkMgrHandler.instance().retrieveAllSNCs(corbaService.getNmsSession().getMultiLayerSubnetworkMgr(), subnet.name, new short[0]);
+//				if (sncs != null) {
+//					sbilog.info("retrieveAllSNCs : subnet=" + subnet.name + "--" + sncs.length);
+//					for (SubnetworkConnection_T snc : sncs) {
+//						try {
+//							sncList.add(SubnetworkConnectionMapper.instance().convertSNC(snc));
+//						} catch (Exception e) {
+//							errorlog.error("retrieveAllSNCs convertException: ", e);
+//						}
+//					}
+//				}
+//			}
 			
-//			sncs = SubnetworkMgrHandler.instance().retrieveAllSNCs(corbaService.getNmsSession().getMultiLayerSubnetworkMgr(), subnetworkName, new short[0]);
+			sncs = SubnetworkMgrHandler.instance().retrieveAllSNCs(corbaService.getNmsSession().getMultiLayerSubnetworkMgr(), subnetworkName, new short[0]);
+			sbilog.info("retrieveAllSNCs : omsSncs start...");
+			omsSncs = SubnetworkMgrHandler.instance().retrieveAllSNCs(corbaService.getNmsSession().getMultiLayerSubnetworkMgr(), subnetworkName, new short[]{41} );
 		} catch (ProcessingFailureException e) {
 			errorlog.error("retrieveAllSNCs ProcessingFailureException: " + CodeTool.isoToGbk(e.errorReason), e);
 		} catch (org.omg.CORBA.SystemException e) {
 			errorlog.error("retrieveAllSNCs CORBA.SystemException: " + e.getMessage(), e);
 		}
-//		if (sncs != null) {
-//			for (SubnetworkConnection_T snc : sncs) {
-//				try {
-//					sncList.add(SubnetworkConnectionMapper.instance().convertSNC(snc));
-//				} catch (Exception e) {
-//					errorlog.error("retrieveAllSNCs convertException: ", e);
-//				}
-//			}
-//		}
+		if (sncs != null) {
+			sbilog.info("retrieveAllSNCs : sncs=" + sncs.length);
+			for (SubnetworkConnection_T snc : sncs) {
+				try {
+					sncList.add(SubnetworkConnectionMapper.instance().convertSNC(snc));
+				} catch (Exception e) {
+					errorlog.error("retrieveAllSNCs convertException: ", e);
+				}
+			}
+		}
+		if (omsSncs != null) {
+			sbilog.info("retrieveAllSNCs : omsSncs=" + omsSncs.length);
+			for (SubnetworkConnection_T snc : omsSncs) {
+				try {
+					sncList.add(SubnetworkConnectionMapper.instance().convertSNC(snc));
+				} catch (Exception e) {
+					errorlog.error("retrieveAllSNCs convertException: ", e);
+				}
+			}
+		}
 		sbilog.info("retrieveAllSNCs : " + sncList.size());
 		return sncList;
 	}
