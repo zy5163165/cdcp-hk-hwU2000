@@ -26,10 +26,12 @@ public class SNCAndCCAndSectionDataTask extends CommonDataTask {
 			for (CrossConnect cc : ccList) {
 				R_TrafficTrunk_CC_Section relation = CCToRelation(cc, TYPECC);
 				relationList.add(relation);
+				insertToSqliteDB(cc);
 			}
 			for (Section section : sectionList) {
 				R_TrafficTrunk_CC_Section relation = SectionToRelation(section, TYPESECTION);
 				relationList.add(relation);
+				insertToSqliteDB(section);
 			}
 			if (relationList != null && relationList.size() > 0) {
 				for (R_TrafficTrunk_CC_Section relation : relationList) {
