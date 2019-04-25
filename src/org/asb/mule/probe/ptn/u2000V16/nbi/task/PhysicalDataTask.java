@@ -413,8 +413,12 @@ public class PhysicalDataTask extends CommonDataTask {
 		newCTP.setTag1("NEW-CC");
 		newCTP.setPortdn(portDn);
 		newCTP.setParentDn(portDn);
-		if (CTPUtil.isVC44C(dn))
-			newCTP.setNativeEMSName("VC4_4c-"+CTPUtil.getJ(dn));
+		if (CTPUtil.isVC4_4C(dn))
+			newCTP.setNativeEMSName("VC4_4c-" + CTPUtil.getJ(dn));
+		else if (CTPUtil.isVC4_16C(dn))
+			newCTP.setNativeEMSName("VC4_16c-" + CTPUtil.getJ(dn));
+		else if (CTPUtil.isVC4_64C(dn))
+			newCTP.setNativeEMSName("VC4_64c-" + CTPUtil.getJ(dn));
 		else if (CTPUtil.isVC4(dn))
 			newCTP.setNativeEMSName("VC4-"+CTPUtil.getJ(dn));
 		else if (CTPUtil.isVC12(dn))

@@ -396,8 +396,12 @@ public class CTPUtil {
 	public static boolean isVC4(String dn) {
 		return dn.indexOf("/sts3c_au4-j") == dn.lastIndexOf("/")
 				|| (dn.contains("sts48c_vc4_16c") && dn.indexOf("/sts48c_vc4_16c") == dn.lastIndexOf("/")
-
-		|| (dn.contains("sts12c_vc4_4c") && dn.indexOf("/sts12c_vc4_4c") == dn.lastIndexOf("/")));
+				|| (dn.contains("sts12c_vc4_4c") && dn.indexOf("/sts12c_vc4_4c") == dn.lastIndexOf("/"))
+				|| (dn.contains("sts192c_vc4_64c") && dn.indexOf("/sts192c_vc4_64c") == dn.lastIndexOf("/")));
+	}
+	
+	public static boolean isVC4Only(String dn) {
+		return dn.indexOf("/sts3c_au4-j") == dn.lastIndexOf("/");
 	}
 
 	public static boolean isVC44C(String dn) {
@@ -405,6 +409,18 @@ public class CTPUtil {
 				|| (dn.contains("sts48c_vc4_16c") && (dn.indexOf("/sts48c_vc4_16c") == dn.lastIndexOf("/")))
 
 		;
+	}
+	
+	public static boolean isVC4_4C(String dn) {
+		return (dn.contains("sts12c_vc4_4c") && (dn.indexOf("/sts12c_vc4_4c") == dn.lastIndexOf("/")));
+	}
+	
+	public static boolean isVC4_16C(String dn) {
+		return (dn.contains("sts48c_vc4_16c") && (dn.indexOf("/sts48c_vc4_16c") == dn.lastIndexOf("/")));
+	}
+	
+	public static boolean isVC4_64C(String dn) {
+		return (dn.contains("sts192c_vc4_64c") && (dn.indexOf("/sts192c_vc4_64c") == dn.lastIndexOf("/")));
 	}
 
 	public static boolean isVC3(String dn) {
@@ -422,7 +438,9 @@ public class CTPUtil {
 			vc4c = "sts48c_vc4_16c=";
 		if (dn.contains("sts12c_vc4_4c="))
 			vc4c = "sts12c_vc4_4c=";
-		if (dn.contains("sts48c_vc4_16c=") || dn.contains("sts12c_vc4_4c=")) {
+		if (dn.contains("sts192c_vc4_64c="))
+			vc4c = "sts192c_vc4_64c=";
+		if (dn.contains("sts48c_vc4_16c=") || dn.contains("sts12c_vc4_4c=") || dn.contains("sts192c_vc4_64c=")) {
 			try {
 				int i = dn.lastIndexOf(vc4c);
 				if (i > -1) {
