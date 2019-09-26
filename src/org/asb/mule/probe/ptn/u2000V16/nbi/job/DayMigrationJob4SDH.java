@@ -199,7 +199,7 @@ public class DayMigrationJob4SDH extends MigrateCommonJob implements CommandBean
 				Vector<BObject> fdfrVector = ffdrTask.excute();
 
 				nbilog.info("TrafficTrunkDataTask: ");
-				MessageUtil.sendSBIMessage(serial, "FlowDomainFragmentDataTask", 50);
+				MessageUtil.sendSBIMessage(serial, "TrafficTrunkDataTask", 50);
 				// test
 				List<String> names = ((U2000Service) service).retrieveAllTrafficTrunkNames();
 				nbilog.debug("TrafficTrunkNames: " + names.size());
@@ -208,6 +208,18 @@ public class DayMigrationJob4SDH extends MigrateCommonJob implements CommandBean
 				ttTask.CreateTask(service, getJobName(), null, nbilog);
 				ttTask.setSqliteConn(sqliteConn);
 				Vector<BObject> ttVector = ttTask.excute();
+				
+				nbilog.info("IPCrossConnectionDataTask: ");
+				TaskPoolExecutor executor4 = new TaskPoolExecutor(multiThreadPoolSize);
+				for (BObject ne : neList) {
+					IPCrossConnectionDataTask task = new IPCrossConnectionDataTask();
+					task.setSqliteConn(sqliteConn);
+					task.CreateTask(service, getJobName(), ne.getDn(), nbilog);
+					executor4.executeTask(task);
+				}
+				nbilog.info("IPCrossConnectionDataTask: waitingForAllFinish.");
+				executor4.waitingForAllFinish();
+				nbilog.info("IPCrossConnectionDataTask: waitingForInsertBObject.");
 
 				nbilog.info("FTPAndPTPDataTask: ");
 				MessageUtil.sendSBIMessage(serial, "FTPAndPTPDataTask", 60);
