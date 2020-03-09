@@ -19,7 +19,7 @@ public class IPCrossConnectionDataTask extends CommonDataTask {
 	public Vector<BObject> excute() {
 		try {
 			List<IPCrossconnection> ccList = this.service.retrieveAllCrossconnections(this.getTask().getObjectName());
-			nbilog.info("IPCrossconnection : " + ccList.size());
+//			nbilog.info("IPCrossconnection : " + ccList.size());
 			if (Detect.notEmpty(ccList)) {
 				for (IPCrossconnection ipc : ccList) {
 					getSqliteConn().insertBObject(ipc);
