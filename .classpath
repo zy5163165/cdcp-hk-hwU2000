@@ -76,6 +76,6 @@
 	<classpathentry kind="lib" path="/probe/common_lib/sqlite-jdbc-3.7.2.jar"/>
 	<classpathentry kind="lib" path="/probe/common_lib/wrapper-3.1.0.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/probe"/>
-	<classpathentry kind="lib" path="C:/02WorkSpace/cdcp-hk/idl-libs/u2000idl.jar"/>
+	<classpathentry kind="lib" path="lib/u2000idl.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
